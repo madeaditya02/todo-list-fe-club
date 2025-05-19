@@ -1,8 +1,36 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Button from "./components/Button"
 import InputForm from "./components/InputForm"
+import axios from "axios"
+import { useNavigate } from "react-router"
 
 function App() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const allCookies = document.cookie.split(';')
+        const cookies = allCookies.map(strCookie => {
+          return strCookie.trim().split('=')
+        })
+        const token = cookies.find(cookie => {
+          return cookie[0] == "todo_login"
+        })[1]
+
+        const resUser = await axios.get('http://localhost:3001/auth/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        console.log(resUser);
+      } catch {
+        return navigate('/login')
+        // console.log(error);
+      }
+    })()
+  }, [])
+
   const [show, setShow] = useState()
   const [list, setList] = useState([
     {
@@ -89,6 +117,12 @@ function App() {
     setActivity("")
     setDates("")
   }
+
+  const logout = () => {
+    cookieStore.delete('todo_login')
+    navigate('/login')
+  }
+
   return (
     <div className="w-2xl mx-auto mt-[85px]">
       <h1 className="text-5xl font-semibold text-center">Todo List</h1>
@@ -160,6 +194,10 @@ function App() {
           </svg>
           Delete Selected Activity
         </button>
+      </div>
+
+      <div className="fixed top-5 right-10">
+        <Button click={logout}>Logout</Button>
       </div>
     </div >
   )
