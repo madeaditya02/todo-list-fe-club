@@ -6,15 +6,17 @@ import { useNavigate } from "react-router"
 
 function App() {
   const navigate = useNavigate()
+  const [list, setList] = useState([])
 
   useEffect(() => {
+    let token
     (async () => {
       try {
         const allCookies = document.cookie.split(';')
         const cookies = allCookies.map(strCookie => {
           return strCookie.trim().split('=')
         })
-        const token = cookies.find(cookie => {
+        token = cookies.find(cookie => {
           return cookie[0] == "todo_login"
         })[1]
 
@@ -23,27 +25,26 @@ function App() {
             'Authorization': `Bearer ${token}`
           }
         })
-        console.log(resUser);
       } catch {
         return navigate('/login')
         // console.log(error);
+      }
+    })();
+    (async () => {
+      try {
+        const resTodo = await axios.get('http://localhost:3001/todo', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        setList(resTodo.data)
+      } catch (error) {
+        console.log(error)
       }
     })()
   }, [])
 
   const [show, setShow] = useState()
-  const [list, setList] = useState([
-    {
-      id: 1,
-      activity: "Mengerjakan UP",
-      date: "2025-04-14"
-    },
-    {
-      id: 2,
-      activity: "Makan",
-      date: "2025-04-15"
-    }
-  ])
   const showAddForm = () => {
     setShow("tambah")
   }
@@ -163,7 +164,7 @@ function App() {
             <div className="flex gap-4 items-center">
               <input type="checkbox" className="rounded-xl size-4" onChange={(event) => updateCheck(event, item.id)} />
               <div className="activity">
-                <p>{item.activity}</p>
+                <p>{item.title}</p>
                 <div className="flex items-center gap-1.5 text-sm mt-1.5">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
